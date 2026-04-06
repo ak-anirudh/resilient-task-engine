@@ -1,0 +1,133 @@
+{
+	"info": {
+		"_postman_id": "c1f7a0b5-c0d2-45af-a45e-b8d5e0a6d59a",
+		"name": "Resilient Task Engine",
+		"description": "This collection hits the local Task Engine API across its 4 endpoints, demonstrating the evolution of the system from Unbounded Queue to Resilient Retries.",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Phase 2: Unbounded Execution",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"taskName\": \"phase2-naive-test\",\n  \"simulatedWorkMs\": 2000\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/tasks",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"tasks"
+					]
+				},
+				"description": "This endpoint accepts an infinite amount of tasks without rejecting any. Vulnerable to memory exhaustion and massive latency spikes."
+			},
+			"response": []
+		},
+		{
+			"name": "Phase 3: Backpressure (Bounded Queue)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"taskName\": \"phase3-backpressure-test\",\n  \"simulatedWorkMs\": 2000\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v2/tasks",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v2",
+						"tasks"
+					]
+				},
+				"description": "This endpoint has a maximum queue capacity of 20 (and 10 threads). If you span 30+ requests concurrently, it returns a 429 Too Many Requests to protect system memory."
+			},
+			"response": []
+		},
+		{
+			"name": "Phase 4: Rate Limiting (Token Bucket)",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"taskName\": \"phase4-ratelimit-test\",\n  \"simulatedWorkMs\": 500\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v3/tasks",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v3",
+						"tasks"
+					]
+				},
+				"description": "This endpoint enforces fairness via a token bucket (max 20 tokens, refills 10/sec). Fast abuse is blocked with a 429 even before hitting the bounded queue."
+			},
+			"response": []
+		},
+		{
+			"name": "Phase 5: Resilience & Retries",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n  \"taskName\": \"phase5-resilience-test\",\n  \"simulatedWorkMs\": 200\n}"
+				},
+				"url": {
+					"raw": "http://localhost:8080/api/v4/tasks",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "8080",
+					"path": [
+						"api",
+						"v4",
+						"tasks"
+					]
+				},
+				"description": "The final production stack. Protects against burst traffic (Backpressure), sustained abuse (Rate Limiting), AND transient downstream failures (50% fail rate simulated) using Exponential Backoff Retries."
+			},
+			"response": []
+		}
+	]
+}
