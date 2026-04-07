@@ -12,10 +12,8 @@ import java.util.Random;
  * =========================================================================
  *  FLAKY DOWNSTREAM SERVICE — Phase 5: Resilience & Retries
  * =========================================================================
- *
  *  Real-world downstream services (databases, third-party APIs) fail
  *  transiently due to network dips or brief overload.
- *
  *  Without retries: The user gets a 500 error immediately.
  *  With retries: We automatically try again, using exponential backoff so
  *  we don't accidentally DDoS the struggling downstream service.
@@ -27,7 +25,7 @@ public class FlakyDownstreamService {
     private final Random random = new Random();
 
     /**
-     * @Retryable config:
+     * {@code @Retryable} config:
      * - maxAttempts = 3 (Initial try + 2 retries)
      * - backoff = @Backoff(delay = 1000, multiplier = 2.0)
      *   -> Wait 1s before retry 1
@@ -35,8 +33,7 @@ public class FlakyDownstreamService {
      *   (Exponential backoff)
      */
     @Retryable(
-            value = { IllegalStateException.class },
-            maxAttempts = 3,
+            retryFor = { IllegalStateException.class },
             backoff = @Backoff(delay = 1000, multiplier = 2.0)
     )
     public String executeFlakyWork(String taskName, int workMs) throws InterruptedException {

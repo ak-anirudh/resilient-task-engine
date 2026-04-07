@@ -8,7 +8,7 @@ import org.springframework.retry.annotation.EnableRetry;
 @EnableRetry
 public class TaskEngineApplication {
 
-	public static void main(String[] args) {
+	static void main(String[] args) {
 		SpringApplication.run(TaskEngineApplication.class, args);
 	}
 
